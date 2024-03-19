@@ -46,6 +46,7 @@ const welcomeMessage = "Sheshat ... Indexing"
 // replayed from database to get faster indexing
 
 func main() {
+<<<<<<< HEAD
 	ctx, cancel := context.WithCancel(context.Background())
 
 	//Setup of --datasource, -d CLI flag
@@ -203,4 +204,28 @@ func StartPProf(hostname string, port int) *http.Server {
 	go srv.ListenAndServe()
 
 	return srv
+=======
+	log.SetLevel(log.DebugLevel)
+	fmt.Println(welcomeMessage)
+
+	syncErrCh := make(chan error)
+	indexerErrCh := make(chan error)
+	ctx := context.Background()
+
+	client := starknet.NewSepoliaFeederGatewayClient()
+	storage := storage.NewPebbleStorage()
+	bus := dispatcher.NewInMemoryBus()
+
+	go synchronizer.Run(ctx, client, storage, syncErrCh)
+	go indexer.Run(ctx, client, storage, bus, indexerErrCh)
+
+	for {
+		select {
+		case syncErr := <-syncErrCh:
+			log.Error("error while syncing network", "error", syncErr)
+		case indexerErr := <-indexerErrCh:
+			log.Error("error while indexing network", "error", indexerErr)
+		}
+	}
+>>>>>>> fd0c924 (feat: add in memory dispatcher + indexing)
 }
