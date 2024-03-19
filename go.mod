@@ -9,6 +9,7 @@ require (
 	github.com/gocql/gocql v1.6.0
 	golang.org/x/crypto v0.21.0
 	gotest.tools v2.2.0+incompatible
+        github.com/nats-io/nats.go v1.13.0
 )
 
 require (
