@@ -14,7 +14,6 @@ import (
 	"github.com/carbonable-labs/indexer/internal/starknet"
 	"github.com/carbonable-labs/indexer/internal/storage"
 	"github.com/carbonable-labs/indexer/internal/synchronizer"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/BurntSushi/toml"
 	"github.com/ethereum/go-ethereum/log"
@@ -52,8 +51,8 @@ var (
 // replayed from database to get faster indexing
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	g, ctx := errgroup.WithContext(ctx)
+	ctx, _ := context.WithCancel(context.Background())
+	// g, ctx := errgroup.WithContext(ctx)
 
 	// Set up logger with a default INFO level in case we fail to parse flags.
 	// Otherwise the final critical log won't show what the parsing error was.
@@ -65,7 +64,7 @@ func main() {
 		log.Crit("must specify a config file on the command line")
 	}
 
-	config, err := loadLoadBalancerConfig(os.Args[1])
+	config, err := setLoadLoadBalancerConfig(os.Args[1])
 	if err != nil {
 		log.Crit("error reading config file", "err", err)
 	}
@@ -95,35 +94,14 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 
-	noriSig := make(chan os.Signal, 1)
+	errCh := make(chan error)
+	go runSynchronizer(ctx, errCh)
 
-	g.Go(func() error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case receivedSignal := <-sig:
-			fmt.Printf("Caught signal: %s\n", receivedSignal)
-			noriSig <- receivedSignal
-			cancel() // Cancel the context to shutdown other goroutines
-			return fmt.Errorf("caught signal: %v", receivedSignal)
-		}
-	})
+	go runLoadBalancer(ctx, config, sig)
 
-	g.Go(func() error {
-		return runSynchronizer(ctx)
-	})
-
-	g.Go(func() error {
-		return runLoadBalancer(ctx, config, noriSig)
-	})
-
-	if err := g.Wait(); err != nil {
-		// defer cancel()
-		log.Crit(fmt.Sprintf("Indexer process terminated: %s", err))
-	}
 }
 
-func loadLoadBalancerConfig(path string) (*nori.Config, error) {
+func setLoadLoadBalancerConfig(path string) (*nori.Config, error) {
 	config := new(nori.Config)
 	if _, err := toml.DecodeFile(path, config); err != nil {
 		return nil, fmt.Errorf("error reading config file: %w", err)
@@ -131,20 +109,21 @@ func loadLoadBalancerConfig(path string) (*nori.Config, error) {
 	return config, nil
 }
 
-func runSynchronizer(ctx context.Context) error {
+func runSynchronizer(ctx context.Context, errCh chan error) {
 	fmt.Println(welcomeMessage)
 
-	errCh := make(chan error)
 	client := starknet.NewSepoliaFeederGatewayClient()
 	storage := storage.NewPebbleStorage()
 
-	go synchronizer.Run(ctx, client, storage, errCh)
+	synchronizer.Run(ctx, client, storage, errCh)
 
-	err := <-errCh
-	return fmt.Errorf("error while syncing network: %s", err)
+	select {
+	case <-errCh:
+		fmt.Println("abcd")
+	}
 }
 
-func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Signal) error {
+func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Signal) {
 	if config.Server.EnablePprof {
 		log.Info("starting pprof", "addr", "0.0.0.0", "port", "6060")
 		pprofSrv := StartPProf("0.0.0.0", 6060)
@@ -165,8 +144,6 @@ func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Sig
 	case <-sig:
 		shutdown()
 	}
-
-	return nil
 }
 
 func StartPProf(hostname string, port int) *http.Server {
