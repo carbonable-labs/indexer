@@ -51,7 +51,7 @@ var (
 // replayed from database to get faster indexing
 
 func main() {
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	// g, ctx := errgroup.WithContext(ctx)
 
 	// Set up logger with a default INFO level in case we fail to parse flags.
@@ -91,14 +91,32 @@ func main() {
 	}
 	log.SetDefault(log.NewLogger(log.LogfmtHandlerWithLevel(os.Stdout, logLevel)))
 
+	// Initialize signal handling
 	sig := make(chan os.Signal, 1)
+	lbSig := make(chan interface{})
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sig
+		cancel() // cancel the context
+	}()
 
-	errCh := make(chan error)
-	go runSynchronizer(ctx, errCh)
+	// Run synchronizer
+	go func() {
+		if err := runSynchronizer(ctx); err != nil {
+			log.Error("synchronizer exited with error", "err", err)
+			cancel() // Optionally cancel the context on error
+		}
+	}()
 
-	go runLoadBalancer(ctx, config, sig)
+	// Run load balancer
+	go func() {
+		runLoadBalancer(cancel, config, lbSig)
+	}()
 
+	// Wait for context to be cancelled (which happens on SIGINT/SIGTERM)
+	<-ctx.Done()
+
+	log.Info("shutting down gracefully")
 }
 
 func setLoadLoadBalancerConfig(path string) (*nori.Config, error) {
@@ -109,21 +127,22 @@ func setLoadLoadBalancerConfig(path string) (*nori.Config, error) {
 	return config, nil
 }
 
-func runSynchronizer(ctx context.Context, errCh chan error) {
+func runSynchronizer(ctx context.Context) error {
 	fmt.Println(welcomeMessage)
 
 	client := starknet.NewSepoliaFeederGatewayClient()
 	storage := storage.NewPebbleStorage()
+	errCh := make(chan error)
 
 	synchronizer.Run(ctx, client, storage, errCh)
 
 	select {
-	case <-errCh:
-		fmt.Println("abcd")
+	case err := <-errCh:
+		return err
 	}
 }
 
-func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Signal) {
+func runLoadBalancer(cancel context.CancelFunc, config *nori.Config, sig <-chan interface{}) {
 	if config.Server.EnablePprof {
 		log.Info("starting pprof", "addr", "0.0.0.0", "port", "6060")
 		pprofSrv := StartPProf("0.0.0.0", 6060)
@@ -143,6 +162,7 @@ func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Sig
 	select {
 	case <-sig:
 		shutdown()
+		cancel()
 	}
 }
 
