@@ -52,7 +52,7 @@ var (
 // replayed from database to get faster indexing
 
 func main() {
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	g, ctx := errgroup.WithContext(ctx)
 
 	// Set up logger with a default INFO level in case we fail to parse flags.
@@ -92,12 +92,29 @@ func main() {
 	}
 	log.SetDefault(log.NewLogger(log.LogfmtHandlerWithLevel(os.Stdout, logLevel)))
 
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	noriSig := make(chan os.Signal, 1)
+
+	g.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case receivedSignal := <-sig:
+			fmt.Printf("Caught signal: %s\n", receivedSignal)
+			noriSig <- receivedSignal
+			cancel() // Cancel the context to shutdown other goroutines
+			return fmt.Errorf("caught signal: %v", receivedSignal)
+		}
+	})
+
 	g.Go(func() error {
 		return runSynchronizer(ctx)
 	})
 
 	g.Go(func() error {
-		return runLoadBalancer(ctx, config)
+		return runLoadBalancer(ctx, config, noriSig)
 	})
 
 	if err := g.Wait(); err != nil {
@@ -127,7 +144,7 @@ func runSynchronizer(ctx context.Context) error {
 	return fmt.Errorf("error while syncing network: %s", err)
 }
 
-func runLoadBalancer(_ context.Context, config *nori.Config) error {
+func runLoadBalancer(ctx context.Context, config *nori.Config, sig <-chan os.Signal) error {
 	if config.Server.EnablePprof {
 		log.Info("starting pprof", "addr", "0.0.0.0", "port", "6060")
 		pprofSrv := StartPProf("0.0.0.0", 6060)
@@ -144,11 +161,10 @@ func runLoadBalancer(_ context.Context, config *nori.Config) error {
 		log.Crit("error starting nori", "err", err)
 	}
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	recvSig := <-sig
-	log.Info("caught signal, shutting down", "signal", recvSig)
-	shutdown()
+	select {
+	case <-sig:
+		shutdown()
+	}
 
 	return nil
 }
