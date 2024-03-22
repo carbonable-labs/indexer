@@ -23,12 +23,6 @@ import (
 
 const welcomeMessage = "Sheshat ... Indexing"
 
-var (
-	GitVersion = ""
-	GitCommit  = ""
-	GitDate    = ""
-)
-
 // starting block
 // indexing configuration
 
@@ -58,7 +52,7 @@ func main() {
 	// Otherwise the final critical log won't show what the parsing error was.
 	log.SetDefault(log.NewLogger(log.LogfmtHandlerWithLevel(os.Stdout, log.LvlInfo)))
 
-	log.Info("starting nori", "version", GitVersion, "commit", GitCommit, "date", GitDate)
+	log.Info("starting nori...")
 
 	if len(os.Args) < 2 {
 		log.Crit("must specify a config file on the command line")
