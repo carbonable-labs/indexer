@@ -8,7 +8,7 @@ import (
 
 type datasource_flag struct {
 	Value    string
-	is_valid bool
+	Is_valid bool
 }
 
 func (d *datasource_flag) datasource_binding() {
@@ -22,8 +22,8 @@ func (d *datasource_flag) Validation() {
 		fn = full node rpc
 	*/
 	valid_values := []string{"fg", "fn"}
-	d.is_valid = slices.Contains(valid_values, d.Value)
-	if !d.is_valid {
+	d.Is_valid = slices.Contains(valid_values, d.Value)
+	if !d.Is_valid {
 		flag.Usage()
 		fmt.Print("Error: Value proportioned for datasource is invalid.\n")
 		//something to abort execution
