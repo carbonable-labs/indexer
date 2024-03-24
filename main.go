@@ -54,14 +54,16 @@ func main() {
 	datasourceFlag := cli_utils.DatasourceFlag()
 	datasourceFlag.Validation()
 
-	datasourceBlock := func() datasource.BlockDatasource {
-		if datasourceFlag.Value == "fn" {
-			return &datasource.FullNode{}
-		}
-		return &datasource.FeederGateway{}
-	}()
+	if datasourceFlag.Is_valid {
+		datasourceBlock := func() datasource.BlockDatasource {
+			if datasourceFlag.Value == "fn" {
+				return &datasource.FullNode{}
+			}
+			return &datasource.FeederGateway{}
+		}()
 
-	datasourceBlock.SyncBlock(ctx, 123)
+		datasourceBlock.SyncBlock(ctx, 123)
+	}
 
 	// g, ctx := errgroup.WithContext(ctx)
 
