@@ -9,6 +9,7 @@ require (
 	github.com/cockroachdb/pebble v1.1.0
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/keep-starknet-strange/nori v0.0.0-20240226191213-2cac95cf09cf
+	github.com/rabbitmq/amqp091-go v1.9.0
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 	gotest.tools v2.2.0+incompatible
