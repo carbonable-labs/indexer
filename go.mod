@@ -16,6 +16,13 @@ require (
 )
 
 require (
+	github.com/nats-io/nkeys v0.4.7 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
+	github.com/nats-io/nats.go v1.33.1
+
+)
+
+require (
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/NethermindEth/starknet.go v0.6.1 // indirect
@@ -66,6 +73,7 @@ require (
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
+	github.com/nats-io/nats.go v1.33.1
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
