@@ -11,6 +11,7 @@ import (
 	"github.com/carbonable-labs/indexer/internal/starknet"
 	"github.com/carbonable-labs/indexer/internal/storage"
 	"github.com/charmbracelet/log"
+	"github.com/NethermindEth/juno/pkg/client"
 )
 
 func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage storage.Storage, errCh chan<- error) {
@@ -24,6 +25,8 @@ type Synchronizer struct {
 	storage storage.Storage
 	client  *starknet.FeederGatewayClient
 	msgch   chan *starknet.GetBlockResponse
+	junoClient *client.Client // Juno client
+    msgch   chan *starknet.GetBlockResponse
 }
 
 func (s *Synchronizer) Start(ctx context.Context) {
@@ -78,7 +81,16 @@ func (s *Synchronizer) storeBlock(block *starknet.GetBlockResponse) {
 	}
 }
 
+
 func (s *Synchronizer) FetchBlock(blockNumber uint64) (*starknet.GetBlockResponse, error) {
+	if s.useJunoDataSource {
+        if junoBlock, err := s.junoClient.GetBlock(context.Background(), blockNumber); err == nil {
+        I am assuming junoClient.GetBlock returns a *starknet.GetBlockResponse or similar
+            return junoBlock, nil
+        } else {
+            log.Error("Failed to fetch block from Juno, falling back to local cache and StarkNet feeder gateway", "error", err)
+        }
+		}
 	key := []byte(fmt.Sprintf("BLOCK#%d", blockNumber))
 	if s.storage.Has(key) {
 		block := s.storage.Get(key)
@@ -133,10 +145,11 @@ func (s *Synchronizer) getLatestBlock() (uint64, error) {
 	return num, nil
 }
 
-func NewSyncronizer(client *starknet.FeederGatewayClient, storage storage.Storage) *Synchronizer {
-	return &Synchronizer{
-		msgch:   make(chan *starknet.GetBlockResponse),
-		client:  client,
-		storage: storage,
-	}
+func NewSynchronizer(client *starknet.FeederGatewayClient, storage storage.Storage, junoClient *client.Client) *Synchronizer {
+    return &Synchronizer{
+        client:  client,
+        storage: storage,
+        junoClient: junoClient,
+        msgch:   make(chan *starknet.GetBlockResponse),
+    }
 }
