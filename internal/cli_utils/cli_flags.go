@@ -11,14 +11,14 @@ Update when a new CLI parameter is added.
 */
 const usage = `
 Command Line Options:
--d, --datasource [fg | fn]
-	Choose a datasource to use either feeder gateway (fd) or full node (fn) as datasource.
+-d, --datasource [full_node | feeder_gateway]
+	Choose a datasource to use either feeder gateway (feeder_gateway) or full node (full_node) as datasource.
 -h, --help prints help information
 `
 
-func DatasourceFlag() datasource_flag {
-	datasource := datasource_flag{}
-	datasource.datasource_binding()
+func CreateDatasourceFlag() DatasourceFlag {
+	datasource := DatasourceFlag{}
+	datasource.DatasourceBinding()
 
 	flag.Usage = func() { log.Print(usage) }
 	flag.Parse()
