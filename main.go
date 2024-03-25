@@ -12,8 +12,6 @@ import (
 	"syscall"
 
 	"github.com/carbonable-labs/indexer/internal/cli_utils"
-	"github.com/carbonable-labs/indexer/internal/datasource"
-
 	"github.com/carbonable-labs/indexer/internal/starknet"
 	"github.com/carbonable-labs/indexer/internal/storage"
 	"github.com/carbonable-labs/indexer/internal/synchronizer"
@@ -51,19 +49,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	//Setup of --datasource, -d CLI flag
-	datasourceFlag := cli_utils.DatasourceFlag()
-	datasourceFlag.Validation()
-
-	if datasourceFlag.Is_valid {
-		datasourceBlock := func() datasource.BlockDatasource {
-			if datasourceFlag.Value == "fn" {
-				return &datasource.FullNode{}
-			}
-			return &datasource.FeederGateway{}
-		}()
-
-		datasourceBlock.SyncBlock(ctx, 123)
-	}
+	datasourceFlag := cli_utils.CreateDatasourceFlag()
+	blockDatasource := datasourceFlag.Validation()
+	blockDatasource.SyncBlock(ctx, 123)
 
 	// g, ctx := errgroup.WithContext(ctx)
 
