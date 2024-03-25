@@ -101,11 +101,27 @@ func main() {
 		cancel() // cancel the context
 	}()
 
+	var junoClient *juno.Client // Placeholder for Juno client type
+if config.UseJunoDataSource {
+    junoClient = juno.NewClient() // An instance of the Juno client
+}
+
+
 	// Run synchronizer
 	go func() {
+		fmt.Println(welcomeMessage)
 		if err := runSynchronizer(ctx); err != nil {
 			log.Error("synchronizer exited with error", "err", err)
 			cancel() // Optionally cancel the context on error
+		    synchronizer := synchronizer.NewSynchronizer(client, storage, junoClient) // Updated to pass junoClient
+    errCh := make(chan error)
+
+    synchronizer.Run(ctx, errCh)
+
+    select {
+    case err := <-errCh:
+        return err
+    }
 		}
 	}()
 
