@@ -18,8 +18,7 @@ max_body_size_bytes = 10485760
 max_concurrent_rpcs = 1000
 # Server log level
 log_level = "info"
-use_juno_data_source = true  # or false, based on your needs, also to toggle the usage of Juno as a data source for block fetching.
-
+use_juno_data_source = true  # or false, based need, also to toggle the usage of Juno as a data source for block fetching.
 
 [redis]
 # URL to a Redis instance.
@@ -106,6 +105,7 @@ backends = ["alchemy"]
 
 # If the authentication group below is in the config,
 # nori will only accept authenticated requests.
+
 [authentication]
 # Mapping of auth key to alias. The alias is used to provide a human-
 # readable name for the auth key in monitoring. The auth key will be
