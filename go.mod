@@ -7,11 +7,9 @@ require (
 	github.com/NethermindEth/juno v0.10.0
 	github.com/charmbracelet/log v0.3.1
 	github.com/cockroachdb/pebble v1.1.0
-	github.com/ethereum/go-ethereum v1.13.14
-	github.com/keep-starknet-strange/nori v0.0.0-20240226191213-2cac95cf09cf
-	github.com/rabbitmq/amqp091-go v1.9.0
+	github.com/oklog/ulid/v2 v2.1.0
 	golang.org/x/crypto v0.21.0
-	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
+	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 )
 
@@ -67,7 +65,10 @@ require (
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/labstack/echo/v4 v4.11.4 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
