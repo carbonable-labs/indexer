@@ -13,6 +13,7 @@ require (
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
 	gotest.tools v2.2.0+incompatible
+        github.com/nats-io/nats.go v1.13.0
 )
 
 require (
