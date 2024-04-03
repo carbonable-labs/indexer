@@ -10,6 +10,15 @@
 services:
   db:
     image: scylladb/scylla
+  nats:
+    image: nats:2.10-scratch
+    command: "--http_port 8222 -js --store_dir /data/jetstream --config /config/config.conf"
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    volumes:
+      - db-data:/data/jetstream
+      - ./etc/nats/:/config
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the
@@ -37,8 +46,8 @@ services:
 #       interval: 10s
 #       timeout: 5s
 #       retries: 5
-# volumes:
-#   db-data:
+volumes:
+  db-data:
 # secrets:
 #   db-password:
 #     file: db/password.txt
