@@ -2,9 +2,12 @@ package synchronizer
 
 import "context"
 
-type FullNode struct {
+type FullNode struct{}
+
+func (n *FullNode) Start(ctx context.Context) {
+	panic("Not implemented")
 }
 
-func (fg *FullNode) SyncBlock(ctx context.Context, block uint64) error {
+func (n *FullNode) SyncBlock(ctx context.Context, block uint64) error {
 	panic("Not implemented")
 }
