@@ -56,7 +56,7 @@ func (c *ContractIndex) Decode(buf []byte) error {
 }
 
 func getContractSnapshot(storage storage.Storage, address string, block uint64) (*ContractIndex, []byte) {
-	contractIdxKey := []byte(fmt.Sprintf("IDX#%s", address))
+	contractIdxKey := []byte(fmt.Sprintf("idx.%s", address))
 
 	contractIdx := NewContractIndex(block)
 	if storage.Has(contractIdxKey) {

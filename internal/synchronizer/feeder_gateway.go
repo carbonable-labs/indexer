@@ -53,11 +53,8 @@ func (s *Synchronizer) Start(ctx context.Context) {
 }
 
 func (s *Synchronizer) start(ctx context.Context) {
-	block := uint64(0)
-	lastBlock, err := s.getLatestBlock()
-	if err != nil {
-		log.Error(err)
-	}
+	block := uint64(1)
+	lastBlock, _ := s.getLatestBlock()
 	if lastBlock > block {
 		block = lastBlock
 	}
@@ -91,13 +88,13 @@ func (s *Synchronizer) storeBlock(block *starknet.GetBlockResponse) {
 		log.Error(fmt.Sprintf("failed to encode block %s", err))
 	}
 
-	if err := s.storage.Set([]byte(fmt.Sprintf("BLOCK#%d", block.BlockNumber)), buf.Bytes()); err != nil {
+	if err := s.storage.Set([]byte(fmt.Sprintf("block.%d", block.BlockNumber)), buf.Bytes()); err != nil {
 		log.Error(err)
 	}
 }
 
 func (s *Synchronizer) FetchBlock(blockNumber uint64) (*starknet.GetBlockResponse, error) {
-	key := []byte(fmt.Sprintf("BLOCK#%d", blockNumber))
+	key := []byte(fmt.Sprintf("block.%d", blockNumber))
 	if s.storage.Has(key) {
 		block := s.storage.Get(key)
 		buf := bytes.NewBuffer(block)
@@ -127,13 +124,13 @@ func (s *Synchronizer) storeLatestBlock(blockNumber uint64) {
 	if err := encoder.Encode(fmt.Sprintf("%d", blockNumber)); err != nil {
 		log.Error(fmt.Sprintf("failed to encode block %s", err))
 	}
-	if err := s.storage.Set([]byte("LATEST_BLOCK"), buf.Bytes()); err != nil {
+	if err := s.storage.Set([]byte("latest_block"), buf.Bytes()); err != nil {
 		log.Error(err)
 	}
 }
 
 func (s *Synchronizer) getLatestBlock() (uint64, error) {
-	res := s.storage.Get([]byte("LATEST_BLOCK"))
+	res := s.storage.Get([]byte("latest_block"))
 
 	buf := bytes.NewBuffer(res)
 	decoder := gob.NewDecoder(buf)

@@ -24,16 +24,16 @@ type ContractRepository interface {
 	GetConfig(string) (*Config, error)
 }
 
-type PebbleContractRepository struct {
+type NatsContractRepository struct {
 	storage storage.Storage
 }
 
-func NewPebbleContractRepository(s storage.Storage) *PebbleContractRepository {
-	return &PebbleContractRepository{storage: s}
+func NewPebbleContractRepository(s storage.Storage) *NatsContractRepository {
+	return &NatsContractRepository{storage: s}
 }
 
-func (r *PebbleContractRepository) SaveConfig(c Config) error {
-	key := fmt.Sprintf("CONFIG#%s", c.AppName)
+func (r *NatsContractRepository) SaveConfig(c Config) error {
+	key := fmt.Sprintf("config.%s", c.AppName)
 
 	var buf bytes.Buffer
 	encoder := gob.NewEncoder(&buf)
@@ -46,9 +46,9 @@ func (r *PebbleContractRepository) SaveConfig(c Config) error {
 	return nil
 }
 
-func (r *PebbleContractRepository) GetConfigs() ([]Config, error) {
+func (r *NatsContractRepository) GetConfigs() ([]Config, error) {
 	var configs []Config
-	data := r.storage.Scan([]byte("CONFIG#"))
+	data := r.storage.Scan([]byte("config."))
 	for _, d := range data {
 		var c Config
 		decoder := gob.NewDecoder(bytes.NewReader(d))
@@ -60,9 +60,9 @@ func (r *PebbleContractRepository) GetConfigs() ([]Config, error) {
 	return configs, nil
 }
 
-func (r *PebbleContractRepository) GetConfig(name string) (*Config, error) {
+func (r *NatsContractRepository) GetConfig(name string) (*Config, error) {
 	var c Config
-	data := r.storage.Get([]byte(fmt.Sprintf("CONFIG#%s", name)))
+	data := r.storage.Get([]byte(fmt.Sprintf("config.%s", name)))
 	decoder := gob.NewDecoder(bytes.NewReader(data))
 	if err := decoder.Decode(&c); err != nil {
 		return nil, err

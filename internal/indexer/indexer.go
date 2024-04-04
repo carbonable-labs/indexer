@@ -106,7 +106,7 @@ func (i *Indexer) indexTransaction(address string, block *starknet.GetBlockRespo
 			log.Error("failed to encode event", "error", err)
 		}
 
-		if err := i.storage.Set([]byte(fmt.Sprintf("%s#TX#%s", address, tx.TransactionHash)), buf.Bytes()); err != nil {
+		if err := i.storage.Set([]byte(fmt.Sprintf("%s.tx.%s", address, tx.TransactionHash)), buf.Bytes()); err != nil {
 			log.Error("failed to store event", "error", err)
 		}
 		log.Info("Indexing tx for address", "address", address, "tx", tx.TransactionHash)
@@ -135,10 +135,10 @@ func (i *Indexer) indexEvent(address string, block *starknet.GetBlockResponse) {
 				log.Error("failed to encode event", "error", err)
 			}
 
-			if err := i.storage.Set([]byte(fmt.Sprintf("%s#EVENT#%s", address, eventId)), buf.Bytes()); err != nil {
+			if err := i.storage.Set([]byte(fmt.Sprintf("%s.event.%s", address, eventId)), buf.Bytes()); err != nil {
 				log.Error("failed to store event", "error", err)
 			}
-			if err := i.storage.Set([]byte(fmt.Sprintf("EVENT#%s", eventId)), buf.Bytes()); err != nil {
+			if err := i.storage.Set([]byte(fmt.Sprintf("event.%s", eventId)), buf.Bytes()); err != nil {
 				log.Error("failed to store event", "error", err)
 			}
 			// i.nats.Publish("event:published", []byte(eventId))
