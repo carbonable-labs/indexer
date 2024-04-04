@@ -5,5 +5,6 @@ import (
 )
 
 type BlockDatasource interface {
-	SyncBlock(ctx context.Context, block uint64) error
+	Start(context.Context)
+	SyncBlock(context.Context, uint64) error
 }
