@@ -39,7 +39,7 @@ func iterateBlocks(ctx context.Context, storage storage.Storage, block uint64, b
 
 // Single piece of code to retrieve block from storage with specific key
 func fetchBlock(storage storage.Storage, block uint64) (*starknet.GetBlockResponse, error) {
-	key := []byte(fmt.Sprintf("BLOCK#%d", block))
+	key := []byte(fmt.Sprintf("block.%d", block))
 	if storage.Has(key) {
 		block := storage.Get(key)
 		buf := bytes.NewBuffer(block)

@@ -50,7 +50,7 @@ func (s *NatsStorage) Get(id []byte) []byte {
 func (s *NatsStorage) Has(id []byte) bool {
 	_, err := s.kv.Get(context.Background(), string(id))
 
-	return errors.Is(err, jetstream.ErrKeyNotFound)
+	return !errors.Is(err, jetstream.ErrKeyNotFound)
 }
 
 func (s *NatsStorage) Set(key []byte, value []byte) error {
