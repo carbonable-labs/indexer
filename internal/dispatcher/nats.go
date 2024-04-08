@@ -1,35 +1,82 @@
 package dispatcher
 
 import (
-	"log"
+	"context"
+	"time"
 
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 )
 
+type NatsDispatcherOptsFunc func(*NatsDispatcherOpts)
+
+type NatsDispatcherOpts struct {
+	streamConfig jetstream.StreamConfig
+	url          string
+	bucket       string
+	timeout      time.Duration
+}
+
+func defaultNatsOptions() *NatsDispatcherOpts {
+	return &NatsDispatcherOpts{
+		url:     nats.DefaultURL,
+		bucket:  "storage",
+		timeout: 10 * time.Second,
+		streamConfig: jetstream.StreamConfig{
+			Name:        "EVENTS",
+			Subjects:    []string{"*.event.>"},
+			Description: "Event stream",
+		},
+	}
+}
+
+func WithBucket(b string) NatsDispatcherOptsFunc {
+	return func(o *NatsDispatcherOpts) {
+		o.bucket = b
+	}
+}
+
+func WithStreamConfig(c jetstream.StreamConfig) NatsDispatcherOptsFunc {
+	return func(o *NatsDispatcherOpts) {
+		o.streamConfig = c
+	}
+}
+
 type NatsDispatcher struct {
-	connection *nats.Conn
-	connError  error
+	js jetstream.JetStream
 }
 
 func (nd *NatsDispatcher) Publish(topic string, data []byte) error {
-	err := nd.connection.Publish(topic, data)
+	_, err := nd.js.PublishAsync(topic, data)
+	return err
+}
+
+func (nd *NatsDispatcher) Subscribe(cName string, topic string, handler MsgHandler) error {
+	c, err := nd.js.CreateOrUpdateConsumer(context.Background(), topic, jetstream.ConsumerConfig{
+		Name:    cName,
+		Durable: cName,
+	})
 	if err != nil {
-		log.Fatal("Error while publishing to topic ", topic, "\nerror: ", err)
 		return err
 	}
-	log.Print("Published to topic [", topic, "] message: '", string(data), "'")
-	return nil
+
+	_, err = c.Consume(func(m jetstream.Msg) {
+		handler(m.Data())
+	})
+
+	return err
 }
 
-func (nd *NatsDispatcher) Subscribe(topic string, handler nats.MsgHandler) error {
-	nd.connection.Subscribe(topic, handler)
-	log.Printf("Listening on [%s]", topic)
-	return nil
-}
-
-func (nd *NatsDispatcher) Connect(server string) {
-	nd.connection, nd.connError = nats.Connect(server)
-	if nd.connError != nil {
-		log.Fatal(nd.connError)
+func NewNatsDispatcher(opts ...NatsDispatcherOptsFunc) *NatsDispatcher {
+	o := defaultNatsOptions()
+	for _, optFn := range opts {
+		optFn(o)
 	}
+
+	nc, _ := nats.Connect(o.url)
+
+	js, _ := jetstream.New(nc)
+	js.CreateOrUpdateStream(context.Background(), o.streamConfig)
+
+	return &NatsDispatcher{js: js}
 }

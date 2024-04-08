@@ -6,7 +6,7 @@ func (d *InMemoryEventDispatcher) Publish(topic string, data []byte) error {
 	panic("TODO")
 }
 
-func (d *InMemoryEventDispatcher) Subscribe(topic string, handler MsgHandler) error {
+func (d *InMemoryEventDispatcher) Subscribe(cName string, topic string, handler MsgHandler) error {
 	panic("TODO")
 }
 

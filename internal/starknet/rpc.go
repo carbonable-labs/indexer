@@ -148,6 +148,7 @@ func (c *client) Get(path string) ([]byte, error) {
 		resp, err := http.Get(fmt.Sprintf("%s/%s", c.baseUrl, path))
 		if err != nil {
 			errch <- err
+			return
 		}
 
 		defer resp.Body.Close()

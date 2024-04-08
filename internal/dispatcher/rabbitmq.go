@@ -76,38 +76,38 @@ func (rd *RabbitMQDispatcher) Publish(topic string, data []byte) error {
 	return nil
 }
 
-func (rd *RabbitMQDispatcher) Subscribe(topic string, handler MsgHandler) error {
+func (rd *RabbitMQDispatcher) Subscribe(cName string, topic string, handler MsgHandler) error {
 	// Graceful shutdown the subscriber
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
 	q, err := rd.ch.QueueDeclare(
-		"",    // queue name (use auto-generated name here, might need to change due to the requirement)
-		false, // durable
-		false, // delete when unused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		cName,
+		false,
+		false,
+		true,
+		false,
+		nil,
 	)
 	failOnError(err, "Failed to declare a queue")
 
 	err = rd.ch.QueueBind(
-		q.Name,      // queue name
-		topic,       // routing key
-		rd.exchange, // exchange name
+		q.Name,
+		topic,
+		rd.exchange,
 		false,
 		nil,
 	)
 	failOnError(err, "Failed to bind a queue")
 
 	msgs, err := rd.ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		return err

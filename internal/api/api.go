@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Run(ctx context.Context, storage storage.Storage, errCh chan error) {
+func Run(ctx context.Context, storage storage.Storage) {
 	e := echo.New()
 	cr := config.NewPebbleContractRepository(storage)
 
@@ -43,8 +43,5 @@ func Run(ctx context.Context, storage storage.Storage, errCh chan error) {
 	e.Logger.Fatal(e.Start(":8080"))
 
 	<-ctx.Done()
-	err := e.Shutdown(ctx)
-	if err != nil {
-		errCh <- err
-	}
+	_ = e.Shutdown(ctx)
 }

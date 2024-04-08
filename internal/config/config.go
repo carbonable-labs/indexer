@@ -50,6 +50,9 @@ func (r *NatsContractRepository) GetConfigs() ([]Config, error) {
 	var configs []Config
 	data := r.storage.Scan([]byte("config."))
 	for _, d := range data {
+		if len(d) == 0 {
+			continue
+		}
 		var c Config
 		decoder := gob.NewDecoder(bytes.NewReader(d))
 		if err := decoder.Decode(&c); err != nil {
