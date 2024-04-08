@@ -15,8 +15,16 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-// Run an indexer for each app registered
-func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage storage.Storage, bus dispatcher.EventDispatcher, errCh chan<- error) {
+func getEventPubName(account string, contract string, eventId string, recordedAt uint64) string {
+	return fmt.Sprintf("%s.event.%s.%s.%d", account, contract, eventId, recordedAt)
+}
+
+func getTxPubName(account string, contract string, txHash string, recordedAt uint64) string {
+	return fmt.Sprintf("%s.tx.%s.%s.%d", account, contract, txHash, recordedAt)
+}
+
+// Run an indexer for each app regis, errCh chan errortered
+func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage storage.Storage, bus dispatcher.EventDispatcher) {
 	// get registered apps with their configuration
 	// for each app create a new indexer in a goroutine
 	// each goroutine will have the configuration hash as ID
@@ -35,7 +43,9 @@ func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage stor
 			log.Info("Indexer started", "app", c.AppName, "hash", c.Hash)
 			i := NewIndexer(c, client, storage, bus)
 			err := i.Start(ctx)
-			errCh <- err
+			if err != nil {
+				log.Error("failed to start indexer", "error", err, "app", c.AppName, "hash", c.Hash)
+			}
 			wg.Done()
 		}(c)
 	}
@@ -111,6 +121,7 @@ func (i *Indexer) indexTransaction(address string, block *starknet.GetBlockRespo
 		}
 		log.Info("Indexing tx for address", "address", address, "tx", tx.TransactionHash)
 
+		i.bus.Publish(getTxPubName(i.config.Hash, address, tx.TransactionHash, block.Timestamp), []byte(tx.TransactionHash))
 		saveContractInterestingBlock(i.storage, address, block.BlockNumber)
 	}
 }
@@ -142,6 +153,7 @@ func (i *Indexer) indexEvent(address string, block *starknet.GetBlockResponse) {
 				log.Error("failed to store event", "error", err)
 			}
 			// i.nats.Publish("event:published", []byte(eventId))
+			i.bus.Publish(getEventPubName(i.config.Hash, address, eventId, block.Timestamp), []byte(eventId))
 			log.Info("Indexing event for address", "address", address, "eventId", eventId)
 
 			saveContractInterestingBlock(i.storage, address, block.BlockNumber)

@@ -6,7 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/carbonable-labs/indexer/internal/api"
 	"github.com/carbonable-labs/indexer/internal/cli"
+	"github.com/carbonable-labs/indexer/internal/dispatcher"
+	"github.com/carbonable-labs/indexer/internal/indexer"
 	"github.com/carbonable-labs/indexer/internal/starknet"
 	"github.com/carbonable-labs/indexer/internal/storage"
 	"github.com/carbonable-labs/indexer/internal/synchronizer"
@@ -49,7 +52,10 @@ func main() {
 
 	client := starknet.NewSepoliaFeederGatewayClient()
 	storage := storage.NewNatsStorage()
+	dispatcher := dispatcher.NewNatsDispatcher()
 	go synchronizer.Run(ctx, opts, client, storage)
+	go api.Run(ctx, storage)
+	go indexer.Run(ctx, client, storage, dispatcher)
 
 	// FIX: dependencies version clash with nori works well as a standalone
 	// if opts.SpinUpRpc {
