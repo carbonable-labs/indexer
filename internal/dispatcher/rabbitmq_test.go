@@ -33,10 +33,10 @@ func TestRabbitMQDispatcher(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	err := rabbitmqPublisher.Publish(topic, []byte(message))
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 
 	err = rabbitmqPublisher.Publish(topic, []byte(message2))
-	assert.NilError(t, err)
+	assert.Nil(t, err)
 
 	time.Sleep(2 * time.Second)
 

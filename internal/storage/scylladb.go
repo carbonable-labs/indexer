@@ -64,7 +64,7 @@ func (s *ScyllaStorage) Scan() ([]gocql.UUID, [][]byte, error) {
 
 // NewScyllaStorage creates a new instance of ScyllaStorage.
 func NewScyllaStorage() (*ScyllaStorage, error) {
-	cluster = gocql.NewCluster("127.0.0.1")
+	cluster := gocql.NewCluster("127.0.0.1")
 	//cluster.Hosts = append(cluster.Hosts, "127.0.0.2", "127.0.0.3") // Add more addresses to the cluster.
 	cluster.Keyspace = "index_keyspace"
 	cluster.Authenticator = gocql.PasswordAuthenticator{
