@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/carbonable-labs/indexer/internal/starknet"
-	"gotest.tools/assert"
+	"github.com/test-go/testify/assert"
 )
 
 func TestFeltFromUint(t *testing.T) {

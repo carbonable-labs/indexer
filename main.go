@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -53,7 +54,9 @@ func main() {
 	blockDatasource := datasourceFlag.Validation()
 	blockDatasource.SyncBlock(ctx, 123)
 
-	// g, ctx := errgroup.WithContext(ctx)
+	// The --use-juno flag.
+	useJuno := flag.Bool("use-juno", false, "Set to true to use Juno as a datasource")
+	flag.Parse()
 
 	// Set up logger with a default INFO level in case we fail to parse flags.
 	// Otherwise the final critical log won't show what the parsing error was.
@@ -101,27 +104,12 @@ func main() {
 		cancel() // cancel the context
 	}()
 
-	var junoClient *juno.Client // Placeholder for Juno client type
-if config.UseJunoDataSource {
-    junoClient = juno.NewClient() // An instance of the Juno client
-}
-
-
 	// Run synchronizer
 	go func() {
 		fmt.Println(welcomeMessage)
-		if err := runSynchronizer(ctx); err != nil {
+		if err := runSynchronizer(ctx, *useJuno); err != nil {
 			log.Error("synchronizer exited with error", "err", err)
 			cancel() // Optionally cancel the context on error
-		    synchronizer := synchronizer.NewSynchronizer(client, storage, junoClient) // Updated to pass junoClient
-    errCh := make(chan error)
-
-    synchronizer.Run(ctx, errCh)
-
-    select {
-    case err := <-errCh:
-        return err
-    }
 		}
 	}()
 
@@ -144,14 +132,14 @@ func setLoadLoadBalancerConfig(path string) (*nori.Config, error) {
 	return config, nil
 }
 
-func runSynchronizer(ctx context.Context) error {
+func runSynchronizer(ctx context.Context, useJuno bool) error {
 	fmt.Println(welcomeMessage)
 
 	client := starknet.NewSepoliaFeederGatewayClient()
 	storage := storage.NewPebbleStorage()
 	errCh := make(chan error)
 
-	synchronizer.Run(ctx, client, storage, errCh)
+	synchronizer.Run(ctx, client, storage, errCh, useJuno)
 
 	select {
 	case err := <-errCh:

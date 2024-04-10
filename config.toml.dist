@@ -18,7 +18,6 @@ max_body_size_bytes = 10485760
 max_concurrent_rpcs = 1000
 # Server log level
 log_level = "info"
-use_juno_data_source = true  # or false, based need, also to toggle the usage of Juno as a data source for block fetching.
 
 [redis]
 # URL to a Redis instance.
