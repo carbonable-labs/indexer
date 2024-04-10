@@ -4,21 +4,22 @@ go 1.22.0
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/NethermindEth/juno v0.10.0
+	github.com/NethermindEth/juno v0.11.5
 	github.com/charmbracelet/log v0.3.1
 	github.com/cockroachdb/pebble v1.1.0
 	github.com/ethereum/go-ethereum v1.13.14
+	github.com/gocql/gocql v1.6.0
 	github.com/keep-starknet-strange/nori v0.0.0-20240226191213-2cac95cf09cf
 	github.com/rabbitmq/amqp091-go v1.9.0
+	github.com/test-go/testify v1.1.4
 	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a
-	gotest.tools v2.2.0+incompatible
 )
 
 require (
+	github.com/nats-io/nats.go v1.33.1
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/nats-io/nats.go v1.33.1
 
 )
 
@@ -56,9 +57,9 @@ require (
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
@@ -73,7 +74,6 @@ require (
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
-	github.com/nats-io/nats.go v1.33.1
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -89,7 +89,6 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
-	github.com/test-go/testify v1.1.4 // indirect
 	github.com/tklauser/go-sysconf v0.3.13 // indirect
 	github.com/tklauser/numcpus v0.7.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
@@ -102,6 +101,7 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
+	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )

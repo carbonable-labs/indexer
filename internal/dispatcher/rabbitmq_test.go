@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"gotest.tools/assert"
+	"github.com/test-go/testify/assert"
 )
 
 func TestRabbitMQDispatcher(t *testing.T) {
