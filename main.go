@@ -50,9 +50,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	natsUrl := os.Getenv("NATS_URL")
+	natsToken := os.Getenv("NATS_TOKEN")
+
 	client := starknet.NewSepoliaFeederGatewayClient()
-	storage := storage.NewNatsStorage()
-	dispatcher := dispatcher.NewNatsDispatcher()
+	storage := storage.NewNatsStorage(storage.WithUrl(natsUrl), storage.WithToken(natsToken))
+	dispatcher := dispatcher.NewNatsDispatcher(dispatcher.WithUrl(natsUrl), dispatcher.WithToken(natsToken))
+
 	go synchronizer.Run(ctx, opts, client, storage)
 	go api.Run(ctx, storage)
 	go indexer.Run(ctx, client, storage, dispatcher)

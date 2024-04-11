@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/charmbracelet/log"
@@ -16,6 +17,7 @@ type NatsStorageOptsFunc func(*NatsStorageOptions)
 type NatsStorageOptions struct {
 	url     string
 	bucket  string
+	token   string
 	timeout time.Duration
 }
 
@@ -24,12 +26,28 @@ func defaultNatsOptions() *NatsStorageOptions {
 		url:     nats.DefaultURL,
 		bucket:  "storage",
 		timeout: 10 * time.Second,
+		token:   os.Getenv("NATS_TOKEN"),
 	}
 }
 
 func WithBucket(b string) NatsStorageOptsFunc {
 	return func(o *NatsStorageOptions) {
 		o.bucket = b
+	}
+}
+
+func WithToken(b string) NatsStorageOptsFunc {
+	return func(o *NatsStorageOptions) {
+		o.token = b
+	}
+}
+
+func WithUrl(u string) NatsStorageOptsFunc {
+	return func(o *NatsStorageOptions) {
+		if u == "" {
+			o.url = nats.DefaultURL
+		}
+		o.url = u
 	}
 }
 
@@ -82,16 +100,20 @@ func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
 		optFn(o)
 	}
 
-	nc, _ := nats.Connect(o.url)
+	nc, _ := nats.Connect(o.url, nats.Token(o.token))
 
 	js, _ := jetstream.New(nc)
 
 	ctx, cancel := context.WithTimeout(context.Background(), o.timeout)
 	defer cancel()
 
-	kv, _ := js.CreateOrUpdateKeyValue(ctx, jetstream.KeyValueConfig{
+	kv, err := js.CreateOrUpdateKeyValue(ctx, jetstream.KeyValueConfig{
 		Bucket: o.bucket,
 	})
+	if err != nil {
+		fmt.Println(err)
+		log.Error("failed to create or update key value", "error", err)
+	}
 
 	return &NatsStorage{kv: kv}
 }

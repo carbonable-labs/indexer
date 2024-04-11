@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -14,6 +15,7 @@ type NatsDispatcherOpts struct {
 	streamConfig jetstream.StreamConfig
 	url          string
 	bucket       string
+	token        string
 	timeout      time.Duration
 }
 
@@ -27,12 +29,28 @@ func defaultNatsOptions() *NatsDispatcherOpts {
 			Subjects:    []string{"*.event.>"},
 			Description: "Event stream",
 		},
+		token: os.Getenv("NATS_TOKEN"),
 	}
 }
 
 func WithBucket(b string) NatsDispatcherOptsFunc {
 	return func(o *NatsDispatcherOpts) {
 		o.bucket = b
+	}
+}
+
+func WithToken(b string) NatsDispatcherOptsFunc {
+	return func(o *NatsDispatcherOpts) {
+		o.token = b
+	}
+}
+
+func WithUrl(u string) NatsDispatcherOptsFunc {
+	return func(o *NatsDispatcherOpts) {
+		if u == "" {
+			o.url = nats.DefaultURL
+		}
+		o.url = u
 	}
 }
 
@@ -73,7 +91,7 @@ func NewNatsDispatcher(opts ...NatsDispatcherOptsFunc) *NatsDispatcher {
 		optFn(o)
 	}
 
-	nc, _ := nats.Connect(o.url)
+	nc, _ := nats.Connect(o.url, nats.Token(o.token))
 
 	js, _ := jetstream.New(nc)
 	js.CreateOrUpdateStream(context.Background(), o.streamConfig)
