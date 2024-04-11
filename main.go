@@ -53,7 +53,7 @@ func main() {
 	natsUrl := os.Getenv("NATS_URL")
 	natsToken := os.Getenv("NATS_TOKEN")
 
-	client := starknet.NewSepoliaFeederGatewayClient()
+	client := starknet.NewFeederGatewayClientFromEnv(os.Getenv("NETWORK"))
 	storage := storage.NewNatsStorage(storage.WithUrl(natsUrl), storage.WithToken(natsToken))
 	dispatcher := dispatcher.NewNatsDispatcher(dispatcher.WithUrl(natsUrl), dispatcher.WithToken(natsToken))
 

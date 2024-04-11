@@ -122,6 +122,17 @@ func NewMainnetFeederGatewayClient() *FeederGatewayClient {
 	}
 }
 
+func NewFeederGatewayClientFromEnv(env string) *FeederGatewayClient {
+	switch env {
+	case "mainnet":
+		return NewMainnetFeederGatewayClient()
+	case "sepolia":
+		return NewSepoliaFeederGatewayClient()
+	default:
+		return NewSepoliaFeederGatewayClient()
+	}
+}
+
 type client struct {
 	currentRequests chan interface{}
 	timer           *time.Timer

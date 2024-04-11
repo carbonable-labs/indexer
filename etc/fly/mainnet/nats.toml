@@ -1,0 +1,48 @@
+app = 'carbonable-nats-mainnet'
+primary_region = 'cdg'
+
+[build]
+dockerfile = "../../nats/Dockerfile"
+
+[http_service]
+internal_port = 8222
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 1
+[[http_service.checks]]
+grace_period = "10s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/healthz"
+[[http_service.checks]]
+grace_period = "10s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/healthz?js-server-only=true"
+
+[[services]]
+internal_port = 4222
+protocol = "tcp"
+processes = ["app"]
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 1
+http_checks = []
+script_checks = []
+[[services.ports]]
+port = 4222
+[[services.tcp_checks]]
+grace_period = "1s"
+interval = "15s"
+restart_limit = 0
+timeout = "2s"
+
+[mounts]
+source = "nats_data"
+destination = "/data/jetstream"
+initial_size = "20gb"
+auto_extend_size_threshold = 80
+auto_extend_size_increment = "1GB"
+auto_extend_size_limit = "5GB"
