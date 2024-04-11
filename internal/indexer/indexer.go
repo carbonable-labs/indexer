@@ -98,9 +98,13 @@ func (i *Indexer) Start(ctx context.Context) error {
 }
 
 func (i *Indexer) Index(contract config.Contract, block starknet.GetBlockResponse) error {
-	// store txs
-	// store events
-	// save contract snapshot if block has data about specific config
+	address := contract.Address
+
+	i.indexTransaction(address, &block)
+	i.indexEvent(address, &block)
+
+	saveContractInterestingBlock(i.storage, address, block.BlockNumber)
+
 	return nil
 }
 
