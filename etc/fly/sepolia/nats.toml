@@ -1,6 +1,9 @@
 app = 'carbonable-nats-sepolia'
 primary_region = 'cdg'
 
+[env]
+JETSTREAM_MAX_FILE_STORE = "17GB"
+
 [build]
 dockerfile = "../../nats/Dockerfile"
 
@@ -21,6 +24,7 @@ interval = "30s"
 method = "GET"
 timeout = "5s"
 path = "/healthz?js-server-only=true"
+
 
 [[services]]
 internal_port = 4222

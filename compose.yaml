@@ -12,7 +12,7 @@ services:
     image: scylladb/scylla
   nats:
     image: nats:2.10-scratch
-    command: "--http_port 8222 -js --store_dir /data/jetstream"
+    command: "--http_port 8222 -js --store_dir /data/jetstream --max_payload=8MB"
     ports:
       - "8222:8222"
       - "4222:4222"
@@ -24,7 +24,7 @@ services:
 # database data between container restarts. The `db-password` secret is used
 # to set the database password. You must create `db/password.txt` and add
 # a password of your choosing to it before running `docker compose up`.
-#     depends_on:
+#     depends_on
 #       db:
 #         condition: service_healthy
 #   db:
