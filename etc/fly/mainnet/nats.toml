@@ -1,6 +1,9 @@
 app = 'carbonable-nats-mainnet'
 primary_region = 'cdg'
 
+[env]
+JETSTREAM_MAX_FILE_STORE = "420GB"
+
 [build]
 dockerfile = "../../nats/Dockerfile"
 
