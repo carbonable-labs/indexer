@@ -26,3 +26,33 @@ func checkConfigChange(ctx context.Context, storage storage.Storage, cfg config.
 		}
 	}
 }
+
+func fetchConfigurations(cr config.ContractRepository, cfgChan chan<- []config.Config) {
+	for {
+		time.Sleep(5 * time.Second)
+		cfgs, err := cr.GetConfigs()
+		if err != nil {
+			log.Error("failed to get configs", "error", err)
+			continue
+		}
+		cfgChan <- cfgs
+	}
+}
+
+func getConfigurationDiffs(old, new []config.Config) []config.Config {
+	var diff []config.Config
+	for _, n := range new {
+		found := false
+		for _, o := range old {
+			// NOTE: we check on appName variations since app configuration reloads are managed within single indexers
+			if n.AppName == o.AppName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			diff = append(diff, n)
+		}
+	}
+	return diff
+}
