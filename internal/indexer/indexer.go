@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/carbonable-labs/indexer/internal/config"
@@ -31,14 +30,28 @@ func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage stor
 	// when configuration changes, hash changes then we stop the indexer and start a new one
 
 	cr := config.NewPebbleContractRepository(storage)
+	cfgCh := make(chan []config.Config)
+	go fetchConfigurations(cr, cfgCh)
+
 	configs, err := cr.GetConfigs()
 	if err != nil {
 		log.Fatal("unable to retrieve configurations", "error", err)
 	}
+	runIndexers(ctx, client, storage, bus, configs)
 
-	var wg sync.WaitGroup
+	for {
+		cfgs := <-cfgCh
+		diff := getConfigurationDiffs(configs, cfgs)
+		if len(diff) == 0 {
+			continue
+		}
+		runIndexers(ctx, client, storage, bus, diff)
+		configs = append(configs, diff...)
+	}
+}
+
+func runIndexers(ctx context.Context, client *starknet.FeederGatewayClient, storage storage.Storage, bus dispatcher.EventDispatcher, configs []config.Config) {
 	for _, c := range configs {
-		wg.Add(1)
 		go func(c config.Config) {
 			log.Info("Indexer started", "app", c.AppName, "hash", c.Hash)
 			i := NewIndexer(c, client, storage, bus)
@@ -46,10 +59,8 @@ func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage stor
 			if err != nil {
 				log.Error("failed to start indexer", "error", err, "app", c.AppName, "hash", c.Hash)
 			}
-			wg.Done()
 		}(c)
 	}
-	wg.Wait()
 }
 
 // Single contract indexer

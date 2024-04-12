@@ -22,7 +22,7 @@ func iterateBlocks(ctx context.Context, storage storage.Storage, block uint64, b
 		}
 		resp, err := fetchBlock(storage, block)
 		if err != nil {
-			log.Error("failed to get block", "error", err, "block", block)
+			log.Debug("failed to get block", "error", err, "block", block)
 
 			time.Sleep(10 * time.Second)
 			continue

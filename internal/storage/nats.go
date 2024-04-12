@@ -46,6 +46,7 @@ func WithUrl(u string) NatsStorageOptsFunc {
 	return func(o *NatsStorageOptions) {
 		if u == "" {
 			o.url = nats.DefaultURL
+			return
 		}
 		o.url = u
 	}
@@ -100,7 +101,14 @@ func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
 		optFn(o)
 	}
 
-	nc, _ := nats.Connect(o.url, nats.Token(o.token))
+	natsOpts := []nats.Option{}
+	if o.token != "" {
+		natsOpts = append(natsOpts, nats.Token(o.token))
+	}
+	nc, err := nats.Connect(o.url, natsOpts...)
+	if err != nil {
+		log.Error("failed to connect to nats storage", "error", err)
+	}
 
 	js, _ := jetstream.New(nc)
 
@@ -111,7 +119,6 @@ func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
 		Bucket: o.bucket,
 	})
 	if err != nil {
-		fmt.Println(err)
 		log.Error("failed to create or update key value", "error", err)
 	}
 
