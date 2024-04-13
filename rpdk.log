@@ -1,0 +1,56 @@
+[2024-04-10T21:10:47Z] DEBUG    - Logging set up successfully
+[2024-04-10T21:10:47Z] DEBUG    - Running None: Namespace(version=False, subparser_name=None, command=<function init at 0x10c78c860>, verbose=0, force=False, type_name=None, artifact_type=None, endpoint_url=None, region=None, target_schemas=[], profile=None)
+[2024-04-10T21:10:47Z] DEBUG    - Root directory: /Users/aryan/Developer/indexer
+[2024-04-10T21:10:47Z] WARNING  - Initializing new project
+[2024-04-10T21:10:47Z] DEBUG    - Loading project file '/Users/aryan/Developer/indexer/.rpdk-config'
+[2024-04-10T21:11:02Z] DEBUG    - Resource type identifier: Carbonable::Indexer::V1
+[2024-04-10T21:11:06Z] DEBUG    - Language plugin: go
+[2024-04-10T21:11:06Z] DEBUG    - Init started
+[2024-04-10T21:11:30Z] DEBUG    - Writing .gitignore: /Users/aryan/Developer/indexer/.gitignore
+[2024-04-10T21:11:30Z] INFO     - File already exists, not overwriting '/Users/aryan/Developer/indexer/.gitignore'
+[2024-04-10T21:11:30Z] DEBUG    - Making source folder structure: /Users/aryan/Developer/indexer/cmd/resource
+[2024-04-10T21:11:30Z] DEBUG    - Writing Makefile: /Users/aryan/Developer/indexer/Makefile
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/Makefile'
+[2024-04-10T21:11:30Z] DEBUG    - Writing go.mod: /Users/aryan/Developer/indexer/go.mod
+[2024-04-10T21:11:30Z] INFO     - File already exists, not overwriting '/Users/aryan/Developer/indexer/go.mod'
+[2024-04-10T21:11:30Z] DEBUG    - Writing SAM template: /Users/aryan/Developer/indexer/template.yml
+[2024-04-10T21:11:30Z] DEBUG    - Writing handlers and tests
+[2024-04-10T21:11:30Z] DEBUG    - Writing stub handlers
+[2024-04-10T21:11:30Z] DEBUG    - Writing README: /Users/aryan/Developer/indexer/README.md
+[2024-04-10T21:11:30Z] INFO     - File already exists, not overwriting '/Users/aryan/Developer/indexer/README.md'
+[2024-04-10T21:11:30Z] DEBUG    - Init complete
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/.rpdk-config'
+[2024-04-10T21:11:30Z] DEBUG    - Writing Execution Role CloudFormation template: /Users/aryan/Developer/indexer/resource-role.yaml
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/resource-role.yaml'
+[2024-04-10T21:11:30Z] DEBUG    - Generate started
+[2024-04-10T21:11:30Z] DEBUG    - Writing Types
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/cmd/resource/config.go'
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/cmd/resource/model.go'
+[2024-04-10T21:11:30Z] DEBUG    - Writing project: /Users/aryan/Developer/indexer/cmd/main.go
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/cmd/main.go'
+[2024-04-10T21:11:30Z] DEBUG    - Writing makebuild: /Users/aryan/Developer/indexer/makebuild
+[2024-04-10T21:11:30Z] DEBUG    - Overwriting '/Users/aryan/Developer/indexer/makebuild'
+[2024-04-10T21:11:30Z] DEBUG    - Caught downstream error
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/go/codegen.py", line 215, in generate
+    subprocess_run(
+  File "/opt/homebrew/Cellar/python@3.12/3.12.2_1/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['go', 'fmt', PosixPath('/Users/aryan/Developer/indexer/cmd/resource/config.go')]' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/core/cli.py", line 105, in main
+    args.command(args)
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/core/init.py", line 154, in wrapper
+    function(args)
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/core/init.py", line 145, in init
+    init_resource(args, project)
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/core/resource/init_resource.py", line 34, in init_resource
+    project.generate()
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/core/project.py", line 547, in generate
+    self._plugin.generate(self)
+  File "/opt/homebrew/Cellar/cloudformation-cli/0.2.36/libexec/lib/python3.12/site-packages/rpdk/go/codegen.py", line 219, in generate
+    raise DownstreamError("go fmt failed") from e
+rpdk.core.exceptions.DownstreamError: go fmt failed
