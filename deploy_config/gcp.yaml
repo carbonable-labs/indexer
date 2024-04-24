@@ -11,7 +11,7 @@ resources:
       roleId: blockchain.indexer
       role:
         title: Blockchain Indexer Role
-        description: Role for the blockchain indexing service
+        description: Role for the carbonable indexing service
         stage: ALPHA
         includedPermissions:
           - storage.buckets.get
@@ -38,3 +38,9 @@ resources:
       storageClass: STANDARD
       versioning:
         enabled: True
+
+deploymentConfiguration:
+  deploymentConfigName: blockchain-indexer-deployment
+  deploymentConfigMetadata:
+    name: blockchain-indexer-deployment
+    description: Deployment configuration for carbonable's indexer resources
