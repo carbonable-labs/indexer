@@ -57,7 +57,8 @@ type NatsStorage struct {
 }
 
 func (s *NatsStorage) Get(id []byte) []byte {
-	entry, err := s.kv.Get(context.Background(), string(id))
+	ctx, _ := s.createCtx()
+	entry, err := s.kv.Get(ctx, string(id))
 	if err != nil {
 		log.Error("failed to get value from nats kv", "error", err)
 		return []byte{}
@@ -67,24 +68,30 @@ func (s *NatsStorage) Get(id []byte) []byte {
 }
 
 func (s *NatsStorage) Has(id []byte) bool {
-	_, err := s.kv.Get(context.Background(), string(id))
+	ctx, _ := s.createCtx()
+	_, err := s.kv.Get(ctx, string(id))
 
 	return !errors.Is(err, jetstream.ErrKeyNotFound)
 }
 
 func (s *NatsStorage) Set(key []byte, value []byte) error {
-	_, err := s.kv.Put(context.Background(), string(key), value)
+	ctx, _ := s.createCtx()
+	_, err := s.kv.Put(ctx, string(key), value)
 	return err
 }
 
+// NOTE: nats scan may take quite some time to execute because of the number of keys.
+// nats add a default timeout of 5 seconds if we do not provide any timeout.
 func (s *NatsStorage) Scan(prefix []byte) [][]byte {
 	var res [][]byte
-	entries, err := s.kv.Watch(context.Background(), fmt.Sprintf("%s>", string(prefix)), jetstream.IncludeHistory())
-	defer entries.Stop()
+	ctx, _ := s.createCtx()
+	entries, err := s.kv.Watch(ctx, fmt.Sprintf("%s>", string(prefix)), jetstream.IncludeHistory())
 	if err != nil {
-		log.Error("failed to scan value from nats kv", "error", err)
+		log.Error("failed to scan value from nats kv", "error", err, "prefix", string(prefix))
 		return [][]byte{}
 	}
+	defer entries.Stop()
+
 	for v := range entries.Updates() {
 		if v == nil {
 			return res
@@ -93,6 +100,10 @@ func (s *NatsStorage) Scan(prefix []byte) [][]byte {
 	}
 
 	return res
+}
+
+func (s *NatsStorage) createCtx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 2*time.Minute)
 }
 
 func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
@@ -112,9 +123,8 @@ func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
 
 	js, _ := jetstream.New(nc)
 
-	ctx, cancel := context.WithTimeout(context.Background(), o.timeout)
-	defer cancel()
-
+	ns := &NatsStorage{}
+	ctx, _ := ns.createCtx()
 	kv, err := js.CreateOrUpdateKeyValue(ctx, jetstream.KeyValueConfig{
 		Bucket: o.bucket,
 	})
@@ -122,5 +132,6 @@ func NewNatsStorage(opts ...NatsStorageOptsFunc) *NatsStorage {
 		log.Error("failed to create or update key value", "error", err)
 	}
 
-	return &NatsStorage{kv: kv}
+	ns.kv = kv
+	return ns
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 )
@@ -25,9 +26,12 @@ func defaultNatsOptions() *NatsDispatcherOpts {
 		bucket:  "storage",
 		timeout: 10 * time.Second,
 		streamConfig: jetstream.StreamConfig{
-			Name:        "EVENTS",
-			Subjects:    []string{"*.event.>"},
-			Description: "Event stream",
+			Name:                 "EVENTS",
+			Subjects:             []string{"*.event.>"},
+			Description:          "Event stream",
+			DiscardNewPerSubject: false,
+			Discard:              jetstream.DiscardOld,
+			MaxMsgsPerSubject:    1,
 		},
 		token: os.Getenv("NATS_TOKEN"),
 	}
@@ -94,7 +98,10 @@ func NewNatsDispatcher(opts ...NatsDispatcherOptsFunc) *NatsDispatcher {
 	nc, _ := nats.Connect(o.url, nats.Token(o.token))
 
 	js, _ := jetstream.New(nc)
-	js.CreateOrUpdateStream(context.Background(), o.streamConfig)
+	_, err := js.CreateOrUpdateStream(context.Background(), o.streamConfig)
+	if err != nil {
+		log.Error("failed to create or update stream", "error", err)
+	}
 
 	return &NatsDispatcher{js: js}
 }

@@ -12,7 +12,7 @@ services:
     image: scylladb/scylla
   nats:
     image: nats:2.10-scratch
-    command: "--http_port 8222 -js --store_dir /data/jetstream --max_payload=8MB"
+    command: "--http_port 8222 -js --store_dir /data/jetstream"
     ports:
       - "8222:8222"
       - "4222:4222"

@@ -14,8 +14,8 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func getEventPubName(account string, contract string, eventId string, recordedAt uint64) string {
-	return fmt.Sprintf("%s.event.%s.%s.%d", account, contract, eventId, recordedAt)
+func getEventPubName(account string, contract string, eventId string, recordedAt uint64, eventName string) string {
+	return fmt.Sprintf("%s.event.%s.%s.%d.%s", account, contract, eventId, recordedAt, eventName)
 }
 
 func getTxPubName(account string, contract string, txHash string, recordedAt uint64) string {
@@ -114,8 +114,6 @@ func (i *Indexer) Index(contract config.Contract, block starknet.GetBlockRespons
 	i.indexTransaction(address, &block)
 	i.indexEvent(address, &block)
 
-	saveContractInterestingBlock(i.storage, address, block.BlockNumber)
-
 	return nil
 }
 
@@ -136,7 +134,9 @@ func (i *Indexer) indexTransaction(address string, block *starknet.GetBlockRespo
 		}
 		log.Info("Indexing tx for address", "address", address, "tx", tx.TransactionHash)
 
-		i.bus.Publish(getTxPubName(i.config.Hash, address, tx.TransactionHash, block.Timestamp), []byte(tx.TransactionHash))
+		if err := i.bus.Publish(getTxPubName(i.config.Hash, address, tx.TransactionHash, block.Timestamp), buf.Bytes()); err != nil {
+			log.Error("failed to publish event", "error", err)
+		}
 		saveContractInterestingBlock(i.storage, address, block.BlockNumber)
 	}
 }
@@ -167,9 +167,20 @@ func (i *Indexer) indexEvent(address string, block *starknet.GetBlockResponse) {
 			if err := i.storage.Set([]byte(fmt.Sprintf("event.%s", eventId)), buf.Bytes()); err != nil {
 				log.Error("failed to store event", "error", err)
 			}
-			// i.nats.Publish("event:published", []byte(eventId))
-			i.bus.Publish(getEventPubName(i.config.Hash, address, eventId, block.Timestamp), []byte(eventId))
-			log.Info("Indexing event for address", "address", address, "eventId", eventId)
+
+			feltEventName := event.Keys[0]
+			contract := i.config.GetContract(address)
+			for e, c := range contract.Events {
+				felt, _ := starknet.StarknetKeccak([]byte(e))
+				if felt.String() != feltEventName {
+					continue
+				}
+
+				if err := i.bus.Publish(getEventPubName(i.config.Hash, address, eventId, block.Timestamp, c), buf.Bytes()); err != nil {
+					log.Error("failed to publish event", "error", err)
+				}
+				log.Info("Indexing event for address", "address", address, "eventId", eventId)
+			}
 
 			saveContractInterestingBlock(i.storage, address, block.BlockNumber)
 		}

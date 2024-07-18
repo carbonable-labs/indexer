@@ -89,7 +89,7 @@ func (s *Synchronizer) storeBlock(block *starknet.GetBlockResponse) {
 	}
 
 	if err := s.storage.Set([]byte(fmt.Sprintf("block.%d", block.BlockNumber)), buf.Bytes()); err != nil {
-		log.Error(err)
+		log.Error("failed to store block", "error", err, "block", block.BlockNumber)
 	}
 }
 
