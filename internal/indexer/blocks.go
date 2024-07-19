@@ -16,6 +16,8 @@ import (
 // Iterate over blocks that are sync with datasource
 // Streams blocks into channel
 func iterateBlocks(ctx context.Context, storage storage.Storage, block uint64, blockCh chan starknet.GetBlockResponse) {
+	maxRetry := 5
+	retries := 0
 	for {
 		if ctx.Err() != nil {
 			return
@@ -24,6 +26,10 @@ func iterateBlocks(ctx context.Context, storage storage.Storage, block uint64, b
 		if err != nil {
 			log.Debug("failed to get block", "error", err, "block", block)
 
+			if retries > maxRetry {
+				go addMissingBlock(storage, block)
+				retries = 0
+			}
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -52,5 +58,16 @@ func fetchBlock(storage storage.Storage, block uint64) (*starknet.GetBlockRespon
 		}
 		return &resp, nil
 	}
+
+	go addMissingBlock(storage, block)
+
 	return nil, errors.New("block not found")
+}
+
+// Add missing block to storage so that main sync process can pick it up
+func addMissingBlock(storage storage.Storage, block uint64) {
+	err := storage.Set([]byte(fmt.Sprintf("missing.%d", block)), []byte(fmt.Sprintf("%d", block)))
+	if err != nil {
+		log.Error("failed to add missing block", "error", err, "block", block)
+	}
 }

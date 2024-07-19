@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"math/big"
 	"strconv"
 	"time"
 
@@ -79,6 +80,27 @@ func (s *Synchronizer) SyncBlock(ctx context.Context, block *starknet.GetBlockRe
 
 	// store data by configuration
 	go s.storeLatestBlock(block.BlockNumber)
+
+	// check for missing blocks
+	go s.checkMissingBlocks()
+}
+
+func (s *Synchronizer) checkMissingBlocks() {
+	for {
+		missing := s.storage.Scan([]byte("missing."))
+		for _, m := range missing {
+			str := string(m)
+			blockId := big.NewInt(0)
+			blockId.SetString(str, 10)
+			b, err := s.client.GetBlock(blockId.Uint64())
+			if err != nil {
+				// block is not created yet
+				continue
+			}
+			s.storeBlock(b)
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func (s *Synchronizer) storeBlock(block *starknet.GetBlockResponse) {
