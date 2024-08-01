@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"math/big"
-	"strconv"
 	"time"
 
 	"github.com/carbonable-labs/indexer/internal/starknet"
@@ -152,22 +151,7 @@ func (s *Synchronizer) storeLatestBlock(blockNumber uint64) {
 }
 
 func (s *Synchronizer) getLatestBlock() (uint64, error) {
-	res := s.storage.Get([]byte("latest_block"))
-
-	buf := bytes.NewBuffer(res)
-	decoder := gob.NewDecoder(buf)
-	var bn string
-	err := decoder.Decode(&bn)
-	if err != nil {
-		return 0, fmt.Errorf("failed to decode block %s", err)
-	}
-
-	num, err := strconv.ParseUint(bn, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse block %s", err)
-	}
-
-	return num, nil
+	return storage.GetLatestBlock(s.storage)
 }
 
 func NewSynchronizer(client *starknet.FeederGatewayClient, storage storage.Storage) *Synchronizer {

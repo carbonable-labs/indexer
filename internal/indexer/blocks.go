@@ -65,8 +65,17 @@ func fetchBlock(storage storage.Storage, block uint64) (*starknet.GetBlockRespon
 }
 
 // Add missing block to storage so that main sync process can pick it up
-func addMissingBlock(storage storage.Storage, block uint64) {
-	err := storage.Set([]byte(fmt.Sprintf("missing.%d", block)), []byte(fmt.Sprintf("%d", block)))
+func addMissingBlock(s storage.Storage, block uint64) {
+	lastBlock, err := storage.GetLatestBlock(s)
+	if err != nil {
+		log.Error("failed to get latest block", "error", err)
+	}
+	if lastBlock < block {
+		log.Debug("missing block < current latest block", "block", block, "latest", lastBlock)
+		return
+	}
+
+	err = s.Set([]byte(fmt.Sprintf("missing.%d", block)), []byte(fmt.Sprintf("%d", block)))
 	if err != nil {
 		log.Error("failed to add missing block", "error", err, "block", block)
 	}
