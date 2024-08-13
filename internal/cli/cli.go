@@ -5,10 +5,8 @@ import (
 	"log"
 )
 
-/*
-Specification of various CLI parameters.
-Update when a new CLI parameter is added.
-*/
+// Specification of various CLI parameters.
+// Update when a new CLI parameter is added.
 const usage = `
 Command Line Options:
 	-d, --datasource [full_node | feeder_gateway]      Choose a datasource to use either feeder gateway (feeder_gateway) or full node (full_node) as datasource.
