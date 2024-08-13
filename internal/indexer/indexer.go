@@ -14,15 +14,17 @@ import (
 	"github.com/charmbracelet/log"
 )
 
+// Generate a unique event name for NATS filtering
 func getEventPubName(account string, contract string, eventId string, recordedAt uint64, eventName string) string {
 	return fmt.Sprintf("%s.event.%s.%s.%d.%s", account, contract, eventId, recordedAt, eventName)
 }
 
+// Generate a unique tx name for NATS filtering
 func getTxPubName(account string, contract string, txHash string, recordedAt uint64) string {
 	return fmt.Sprintf("%s.tx.%s.%s.%d", account, contract, txHash, recordedAt)
 }
 
-// Run an indexer for each app regis, errCh chan errortered
+// Run an indexer for each app registered
 func Run(ctx context.Context, client *starknet.FeederGatewayClient, storage storage.Storage, bus dispatcher.EventDispatcher) {
 	// get registered apps with their configuration
 	// for each app create a new indexer in a goroutine
