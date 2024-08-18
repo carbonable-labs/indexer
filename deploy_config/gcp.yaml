@@ -1,0 +1,46 @@
+imports:
+  - path: gcp-types/cloudresourcemanager-v1:projects.iamRoles
+  - path: gcp-types/iam-v1:policy
+  - path: gcp-types/storage-v1:buckets
+
+resources:
+  - name: blockchain-indexer-role
+    type: gcp-types/cloudresourcemanager-v1:projects.iamRoles
+    properties:
+      parent: projects/carbonable
+      roleId: blockchain.indexer
+      role:
+        title: Blockchain Indexer Role
+        description: Role for the carbonable indexing service
+        stage: ALPHA
+        includedPermissions:
+          - storage.buckets.get
+          - storage.buckets.list
+          - storage.objects.get
+          - storage.objects.list
+
+  - name: role-policy
+    type: gcp-types/iam-v1:policy
+    properties:
+      resource: $(ref.blockchain-indexer-role.name)
+      policy:
+        bindings:
+          - role: projects/carbonable/roles/blockchain.indexer
+            members:
+              - serviceAccount:blockchain-indexer@carbonable.iam.gserviceaccount.com
+
+  - name: indexer-bucket
+    type: gcp-types/storage-v1:buckets
+    properties:
+      project: carbonable
+      name: indexer-bucket
+      location: US
+      storageClass: STANDARD
+      versioning:
+        enabled: True
+
+deploymentConfiguration:
+  deploymentConfigName: blockchain-indexer-deployment
+  deploymentConfigMetadata:
+    name: blockchain-indexer-deployment
+    description: Deployment configuration for carbonable's indexer resources
